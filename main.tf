@@ -14,8 +14,9 @@ resource "google_compute_disk" "data_disk" {
 }
 
 resource "google_compute_instance" "muthu" {
-  name         = "muthu-vm"
-  machine_type = "n1-standard-1"
+  count = 3
+  name         = "muthu-vm-${count.index + 1}"
+  machine_type = "n16-standard-2"
   zone         = var.zone
   allow_stopping_for_update = true
   boot_disk {
