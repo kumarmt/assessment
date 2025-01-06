@@ -6,7 +6,7 @@
   vars:
     docker_username: "rtyyy"
     docker_login_credentials: "fghhhjj"
-    docker_images: "$(docker images -q)"
+    #docker_images: "$(docker images -q)"
 
   tasks:
     - name: Install required packages
@@ -45,7 +45,7 @@
         enabled: yes
 
     - name: Log in to Docker
-      shell: echo "{{ docker_password }}" | docker login -u "{{ docker_username }}" --password-stdin
+      shell: echo "{{ docker_login_credentials }}" | docker login -u "{{ docker_username }}" --password-stdin
       no_logs: true
 
     - name: Docker list images
