@@ -1,0 +1,62 @@
+---
+- name: Install Docker and configure cron job
+  hosts: all
+  become: yes
+
+  vars:
+    docker_username: "rtyyy"
+    docker_login_credentials: "fghhhjj"
+    docker_images: "$(docker images -q)"
+
+  tasks:
+    - name: Install required packages
+      apt:
+        name: "{{ item }}"
+        state: present
+      loop:
+        - apt-transport-https
+        - ca-certificates
+        - curl
+        - software-properties-common
+
+    - name: Add Docker GPG key
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+
+    - name: Add Docker repository
+      apt_repository:
+        repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable
+        state: present
+
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+
+    - name: Install Docker
+      apt:
+        name: docker-ce
+        state: present
+
+    - name: Ensure Docker service is running
+      service:
+        name: docker
+        state: started
+        enabled: yes
+
+    - name: Log in to Docker
+      shell: echo "{{ docker_password }}" | docker login -u "{{ docker_username }}" --password-stdin
+      no_logs: true
+
+    - name: Docker list images
+      shell: docker images -q
+      register: docker_rmi_images
+
+    - name: Create cron job to run `docker rmi --force` weekly
+      cron:
+        name: "Remove all Docker images weekly"
+        minute: "0"
+        hour: "0"
+        day: "7"
+        job: "/usr/bin/docker rmi --force {{ items }}"
+      loop: "{{ docker_rmi_images.stdout_lines }}"
